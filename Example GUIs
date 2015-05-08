@@ -1,4 +1,238 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.*;
 
+class Graph extends JPanel{
+	boolean reset;
+	int mod;
+	double[] array=new double[5];
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
+		if (reset) {
+			super.paintComponent(g);
+			g.drawLine(80, 20, 80, 170);
+			g.drawLine(80, 170, 350, 170);
+			g.drawString("Dept 1",10,40);
+			g.drawString("Dept 2",10,70);
+			g.drawString("Dept 3",10,100);
+			g.drawString("Dept 4",10,130);
+			g.drawString("Dept 5",10,160);
+			g.drawString("Dept 5",10,160);
+			g.drawLine(170,165, 170, 175);
+			g.drawLine(260,165, 260, 175);
+			g.drawLine(350,165, 350, 175);
+			String max;
+			String val1;
+			String val2;
+			int maxInt=(mod+1)*10;
+			while (maxInt%3!=0) {
+				maxInt+=10;
+			}
+			max=Integer.toString(maxInt);
+			val1=Integer.toString((int)  (maxInt/3));
+			val2=Integer.toString((int) (maxInt*2/3));
+			g.drawString(val1,170,190);
+			g.drawString(val2,260,190);
+			g.drawString(max,350,190);
+			for (int i=0; i<5; i++) {
+				g.setColor(Color.RED);
+				g.fillRect(80, 20+(30*i), (int)(array[i]*270/Double.parseDouble(max)), 20);
+			}
+			reset=false;
+		} else {
+			g.drawLine(80, 20, 80, 170);
+			g.drawLine(80, 170, 350, 170);
+			g.drawString("Dept 1",10,40);
+			g.drawString("Dept 2",10,70);
+			g.drawString("Dept 3",10,100);
+			g.drawString("Dept 4",10,130);
+			g.drawString("Dept 5",10,160);
+			g.drawString("Dept 5",10,160);
+			g.drawString("10",170,190);
+			g.drawString("20",260,190);
+			g.drawString("30",350,190);
+			g.drawLine(170,165, 170, 175);
+			g.drawLine(260,165, 260, 175);
+			g.drawLine(350,165, 350, 175);
+		}
+
+	}
+
+}
+
+public class BloodDrive implements ActionListener, KeyListener {
+	JFrame frame;
+
+	Graph contentPane;
+
+	JLabel label;
+	JLabel label2;
+	JLabel label3;
+	JLabel label4;
+	JLabel label5;
+	JButton button;
+	JTextField text;
+	JTextField text2;
+	JTextField text3;
+	JTextField text4;
+	JTextField text5;
+	JLabel error;
+	String eventName;
+
+	public BloodDrive() {
+		// TODO Auto-generated constructor stub
+		frame=new JFrame("Blood Drive");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		contentPane=new Graph();
+		contentPane.setBorder(BorderFactory.createEmptyBorder(200, 20, 20, 20));
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
+		label=new JLabel("Enter an amount of blood donated for department 1:");
+		label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label);
+		text=new JTextField(10);
+		contentPane.add(text);
+
+		label2=new JLabel("Enter an amount of blood donated by department 2:");
+		label2.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label2);
+		text2=new JTextField(10);
+		contentPane.add(text2);
+
+		label3=new JLabel("Enter an amount of blood donated by department 3:");
+		label3.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label3);
+		text3=new JTextField(10);
+		contentPane.add(text3);
+
+		label4=new JLabel("Enter an amount of blood donated by department 4:");
+		label4.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label4);
+		text4=new JTextField(10);
+		contentPane.add(text4);
+
+		label5=new JLabel("Enter an amount of blood donated by department 5:");
+		label5.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label5);
+		text5=new JTextField(10);
+		text5.addKeyListener(this);
+		contentPane.add(text5);
+
+
+		button=new JButton("Enter");
+		button.setActionCommand("Enter");
+		button.addActionListener(this);
+		///button.addKeyListener(this);
+		contentPane.add(button);
+
+		error=new JLabel(" ");
+		contentPane.add(error);
+		frame.setContentPane(contentPane);
+		frame.pack();
+		frame.setVisible(true);		
+
+	}
+
+	public double getDouble(String s) {
+		boolean problem=false;
+		try {
+			Double.parseDouble(s);
+		} catch (Exception ex) {
+			error.setText("invalid data");
+			eventName="invalid";
+			problem=true;
+		}
+		if (!problem) {
+			if (Double.parseDouble(s)<0) {
+				error.setText("invalid data");
+				eventName="invalid";
+				return 0;
+			} else {
+				error.setText(" ");
+				return Double.parseDouble(s);
+			}
+		} else {
+			return 0;
+		}
+
+	}
+
+	public void link() {
+		double max=0;
+		String dept1=text.getText();
+		double numberInt=getDouble(dept1);
+		String dept2=text2.getText();
+		double numberInt2=getDouble(dept2);
+		String dept3=text3.getText();
+		double numberInt3=getDouble(dept3);
+		String dept4=text4.getText();
+		double numberInt4=getDouble(dept4);
+		String dept5=text5.getText();
+		double numberInt5=getDouble(dept5);
+		double[] array={numberInt, numberInt2, numberInt3, numberInt4, numberInt5};
+		//if (eventName.equals("Enter")) {
+		for (double i:array) {
+			if (max<i) {
+				max=i;
+			}
+		}
+		contentPane.array=array;
+		int placeholder=1;
+		while (max>10) {
+			max-=10;
+			placeholder++;
+		}
+		contentPane.mod=placeholder;
+
+		contentPane.reset=true;
+		frame.setContentPane(contentPane);
+		//}
+	}
+	public void actionPerformed(ActionEvent event) {
+		eventName=event.getActionCommand();
+		if (eventName.equals("Enter")) {
+			link();
+		}
+	}
+
+	public void keyPressed(KeyEvent event) {
+		int actionInt=event.getKeyCode();
+		String actionString=event.getKeyText(actionInt);
+		if (actionString.equals("Enter")) {
+			link();
+		}
+
+	}
+
+	public void keyTyped(KeyEvent event) {
+
+	}
+
+	public void keyReleased(KeyEvent event) {
+
+	}
+
+	private static void runGUI() {
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		BloodDrive drive=new BloodDrive();
+	}
+	/**
+	 * @param args
+	 */
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				runGUI();
+			}
+		});
+	}
+
+}
+
+
+// First
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
