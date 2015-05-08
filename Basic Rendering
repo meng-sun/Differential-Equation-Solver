@@ -1,0 +1,310 @@
+import javax.swing.*;
+import java.util.ArrayList;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+class Viewable {
+	private boolean viewing;
+	private int xCoord;
+	private int yCoord;
+	private int zCoord;
+	private int size;
+	public Viewable(boolean viewing, int size, int xCoord, int yCoord, int zCoord) {
+		this.viewing=viewing;
+		this.size=size;
+		this.xCoord=xCoord;
+		this.yCoord=yCoord;
+		this.zCoord=zCoord;
+	}
+
+	public void changeView(boolean a) {
+		viewing=a;
+	}
+
+	public boolean view() {
+		return viewing;
+	}
+	public int maxSize() {
+		return size;
+	}
+	public int xCoord() {
+		return xCoord;
+	}
+	public int yCoord() {
+		return yCoord;
+	}
+	public int zCoord() {
+		return zCoord;
+	}
+	public void move(int a, int b, int field) {
+		if ((xCoord+a<=field && a>0) || (xCoord+a>=(-field) && a<0)) {
+			xCoord+=a;
+			//currently can go through objects, maybe change this later?
+			//System.out.println("SYSTEM moved by a "+a+" xCoord is"+xCoord );
+		}
+		if ((yCoord+b<=field&& b>0)||(yCoord+b>=(-field) && b<0)) {
+			yCoord+=b;
+			//System.out.println("SYSTEM moved by b "+b+" personalXCoord is"+yCoord +" field is "+field);
+		}
+	}
+}
+
+class ViewFinder extends JPanel {
+	private int field;
+	private int xDim;
+	private boolean shake;
+	private boolean shakeUp;
+	private int yDim;
+	private int horizonLine;
+	private int turnDegree; //0 degrees in to the north
+	private int viewDegree;
+	private int personalXCoord;
+	private int personalYCoord;
+	private int personalZCoord;
+	ArrayList<Viewable> objects=new ArrayList<Viewable>();
+	
+	public ViewFinder(JFrame jFrame) {
+		field=20;
+		xDim=jFrame.getWidth();
+		yDim=jFrame.getHeight();
+		horizonLine=yDim/2;
+		turnDegree=45;
+		viewDegree=0;// restricted to 180/-180
+		personalXCoord=0;
+		personalYCoord=0;
+		personalZCoord=1;
+	}
+
+	public boolean canSee(Viewable obj) {
+		int side=(int) (turnDegree/90);
+		boolean correctCoord=false;
+		if (side==0) {
+			if (obj.yCoord()>personalYCoord) {
+				correctCoord=true;
+			}
+		} else if (side==1) {
+			if (obj.xCoord()>personalXCoord) {
+				correctCoord=true;
+			}
+		} else if (side==2) {
+			if (obj.yCoord()<personalYCoord) {
+				correctCoord=true;
+			}
+		} else if (side==3) {
+			if (obj.xCoord()<personalXCoord) {
+				correctCoord=true;
+			}
+		}
+		obj.changeView(correctCoord);
+		return correctCoord;
+	}
+
+	public int field() {
+		return field;
+	}
+	public void findDegree() {
+		viewDegree=turnDegree%90;
+	}
+
+	public double distanceFrom(Viewable obj) {
+		if (obj.view()){
+			double xDistance=Math.abs((obj.xCoord()-personalXCoord));
+			double yDistance=Math.abs((obj.yCoord()-personalYCoord));
+			if ((int) (turnDegree/90)==0 || (int) (turnDegree/90)==2) {
+				return yDistance;
+			} else if ((int) (turnDegree/90)==1 || (int) (turnDegree/90)==3) {
+				return xDistance;
+			}
+		}
+		return 0.0;
+	}
+	public int sizeSeen(Viewable obj) {
+		if (obj.view()){
+			double sizeSeen=0;
+			double xDistance=Math.abs((obj.xCoord()-personalXCoord));
+			double yDistance=Math.abs((obj.yCoord()-personalYCoord));
+			if ((int) (turnDegree/90)==0 || (int) (turnDegree/90)==2) {
+				sizeSeen=obj.maxSize()*((field-yDistance)/field);
+			} else if ((int) (turnDegree/90)==1 || (int) (turnDegree/90)==3) {
+				sizeSeen=obj.maxSize()*((field-xDistance)/field);
+			}
+			return (int) sizeSeen;
+		}else {
+			return 0;
+		}
+	}
+
+
+	public void paintComponent(Graphics g) {
+		int shift;
+		super.paintComponent(g);
+		Color sky=new Color(51, 101, 255);
+		g.setColor(sky);
+		g.fillRect(0, 0, xDim, yDim);
+		Color sand=new Color(247, 218, 100);
+		g.setColor(sand);
+		g.fillRect(0, horizonLine, xDim, yDim-horizonLine);
+		for (Viewable element: objects) {
+			if (canSee(element)) {
+				if (shake) {
+					if (!shakeUp) {
+						shift=-2;
+						shakeUp=true;
+					} else {
+						shift=2;
+						shakeUp=false;
+					}
+				} else {
+					shift=0;
+				}
+				Graphics2D g2d = (Graphics2D)g;
+				Color start = Color.yellow;
+				Color end = Color.white;
+				GradientPaint gradient = new GradientPaint(150,50,start,100,0,end,true);
+				g2d.setPaint(gradient);
+				findDegree();
+				int xPixel= (int) (((xDim-(sizeSeen(element)/2))-((90-viewDegree)*xDim/90)));
+				int yPixel=(int) (horizonLine-(sizeSeen(element)/2)-(0.5*yDim*(element.zCoord()-personalZCoord)/distanceFrom(element))+shift);
+				g2d.fillOval(xPixel, yPixel, sizeSeen(element), sizeSeen(element));
+				g2d.setColor(Color.black);
+				g2d.fillOval(xPixel, (int)(horizonLine-50+(0.5*yDim*(element.zCoord()-personalZCoord)/distanceFrom(element))), (int)sizeSeen(element), (int)(sizeSeen(element)/2.5));
+			}
+		}
+	}
+
+	public void move(int a, int b) {
+		if ((personalXCoord+a<=field && a>0) || (personalXCoord+a>=(-field) && a<0)) {
+			personalXCoord+=a;
+			//currently can go through objects, maybe change this later?
+		}
+		if ((personalYCoord+b<=field&& b>0)||(personalYCoord+b>=(-field) && b<0)) {
+			personalYCoord+=b;
+		}
+		shake=true;
+	}
+	public void turn(int c) {
+		shake=false;
+		findDegree();
+		turnDegree+=c;
+		if (turnDegree<0) {
+			turnDegree+=360;
+		}
+		if (turnDegree>360) {
+			turnDegree-=360;
+		}
+	}
+	public String directionFacing() {
+		int side=(int) (turnDegree/90);
+		String direction="";
+		if (side==0) {
+			direction="Positive Y";
+		} else if (side==1) {
+			direction="Positive X";
+		} else if (side==2) {
+			direction="Negative Y";
+		} else if (side==3) {
+			direction="Negative X";
+		}
+		return direction;
+	}
+}
+
+public class ArtAssignment implements ActionListener, KeyListener {
+	JFrame jFrame;
+	ViewFinder paint;
+	Viewable sun;
+	Timer timer;
+	int movement;
+
+	public  ArtAssignment() {
+		movement=1;
+		timer = new Timer(1000, this);
+		timer.setInitialDelay(1000);
+		timer.start();
+		jFrame = new JFrame();
+		jFrame.setSize(300, 300);
+		paint=new ViewFinder(jFrame);
+		jFrame.setContentPane(paint);
+		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jFrame.setVisible(true);
+		jFrame.addKeyListener(this);
+		sun=new Viewable(true, 100, 0, 16, 10);
+		paint.objects.add(sun);
+
+	}
+
+
+	public static void runGUI() {
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		ArtAssignment test =new ArtAssignment();
+	}
+
+	public void actionPerformed(ActionEvent event) {
+		if (sun.yCoord()>=(paint.field()-1)) {
+			movement=-1;
+		} else if (sun.yCoord()<=(-paint.field()+1)){
+			movement=1;
+		}
+		sun.move(0, movement, paint.field());
+		paint.repaint();
+	}
+
+
+
+	@Override
+	public void keyPressed(KeyEvent event) {
+		int actionInt=event.getKeyCode();
+		String actionString=KeyEvent.getKeyText(actionInt);
+		if (actionString.equals("Right")) {
+			//turn path varies with direction facing but I can't change it
+			paint.turn(-2);
+		} else if (actionString.equals("Left")) {
+			paint.turn(2);
+		} else if (actionString.equals("Up")) {
+			String direction=paint.directionFacing();
+			if (direction=="Positive X") {
+				paint.move (1, 0);
+			} else if (direction=="Positive Y") {
+				paint.move (0,1);
+			} else if (direction=="Negative X") {
+				paint.move (-1, 0);
+			} else if (direction=="Negative Y") {
+				paint.move (0, -1);
+			}
+
+		} else if (actionString.equals("Down")) {
+			String direction=paint.directionFacing();
+			if (direction=="Positive X") {
+				paint.move (-1, 0);
+			} else if (direction=="Positive Y") {
+				paint.move (0,-1);
+			} else if (direction=="Negative X") {
+				paint.move (1, 0);
+			} else if (direction=="Negative Y") {
+				paint.move (0, 1);
+			}
+		}
+		paint.repaint();
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+	public static void main(String[] args) {
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				runGUI();
+			}
+		});
+	}
+}
