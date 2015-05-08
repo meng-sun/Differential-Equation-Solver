@@ -1,0 +1,309 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.regex.*;
+import java.lang.Integer;
+
+class Panel extends JPanel {
+	public Panel() {
+		setBackground(Color.WHITE);
+	}
+
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		g.drawOval(0, 0, getWidth(), getHeight());
+	}
+
+}
+public class Interface implements ActionListener, KeyListener{
+	JFrame frame;
+	JPanel contentPane;
+	JLabel label;
+	JButton button;
+	JTextField text;
+	JLabel error;
+	String eventName="";
+	ArrayList<ArrayList<JTextField>> textField=new ArrayList<ArrayList<JTextField>>();
+	String result="";
+
+	public Interface() {
+		frame=new JFrame("Systems Solver");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		contentPane=new Panel();
+		contentPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+		contentPane.setLayout(new GridLayout(0, 3, 10, 5));
+		label=new JLabel("Enter squar?e matrix size: ");
+		//label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10,10));
+		contentPane.add(label);
+		text=new JTextField(10);
+		text.addKeyListener(this);
+		contentPane.add(text);
+		button=new JButton("Enter");
+		button.setActionCommand("Enter");
+		button.addActionListener( this);
+		contentPane.add(button);
+		error=new JLabel(" ");
+		contentPane.add(error);
+		frame.setContentPane(contentPane);
+		frame.pack();
+		frame.setVisible(true);		
+
+	}
+
+	public double getDouble(String s) {
+		boolean problem=false;
+		try {
+			Double.parseDouble(s);
+		} catch (Exception ex) {
+			error.setText("invalid data");
+			problem=true;
+		}
+		if (!problem) {
+			if (Double.parseDouble(s)<2) {
+				//changed
+				error.setText("invalid data");
+				return 0;
+			} else {
+				error.setText(" ");
+				eventName="ok";
+				return Double.parseDouble(s);
+			}
+		} else {
+			return 0;
+		}
+
+	}
+
+	public void link() {
+		contentPane.removeAll();
+		int i= (int) (getDouble(text.getText()));
+		label= new JLabel("Enter values of matrix");
+		contentPane.setLayout(new GridLayout(0, i, 10, 5));
+		contentPane.add(label);
+		while ((i-1)>0) {
+			contentPane.add(new JLabel(" "));
+			i--;
+		}
+		int num=0;
+		i= (int) (getDouble(text.getText()));
+		int m=0;
+		while (i>m) {
+			int k= 0;
+			textField.add(new ArrayList<JTextField>());
+
+			while (i>k) {
+				textField.get(m).add(new JTextField(5));
+				contentPane.add(textField.get(m).get(k));
+				k++;
+				num++;
+			}
+			m++;
+		}
+		System.out.println(num);
+		button=new JButton("Enter");
+		button.setActionCommand("Matrix");
+		button.addActionListener(this);
+		contentPane.add(button);
+		error=new JLabel(" ");
+		contentPane.add(error);
+		contentPane.revalidate();
+		contentPane.repaint();
+		frame.pack();
+	}
+
+
+	public void solveMatrix(int matrixSize, ArrayList<Integer> matrixStartIndex) {
+		boolean matrix2by2=false;
+		String minus1="";
+		String minus2="";
+		for (int column=0; column<textField.size(); column++) {
+			boolean match=false;
+			if (matrixSize>2) {
+
+				for (int index:matrixStartIndex) {
+					if (column==index){
+						match=true;
+					}
+				}
+				if (!match){
+					System.out.print("matrixSize= "+matrixSize+"\tcolumn= "+(column)+"\trow= "+(textField.size()-matrixSize)+"\n");
+					if ((textField.size()-matrixSize)==(column)) {
+						result+="["+textField.get(textField.size()-matrixSize).get(column).getText()+"-x";
+
+					} else {
+						result+="["+textField.get(textField.size()-matrixSize).get(column).getText();
+					}
+					matrixStartIndex.add(column);
+					solveMatrix(matrixSize-1, matrixStartIndex);
+					matrixStartIndex.remove(matrixStartIndex.size()-1);
+					result+="]";
+				}
+
+			} else {
+				for (int index:matrixStartIndex) {
+					if (column==index){
+						match=true;
+					}
+				}
+				if (!match){
+
+					if (matrix2by2) {
+						System.out.print("matrixSize= "+matrixSize+"\tcolumn= "+(column)+"\trow= "+(textField.size()-1)+"\n");
+						if (column==textField.size()-1) {
+							result+="("+textField.get(textField.size()-1).get(column).getText()+"-x)";
+							minus2="("+textField.get(textField.size()-2).get(column).getText()+")";
+						} else {
+							result+="("+textField.get(textField.size()-1).get(column).getText()+")";
+							if (textField.size()-2==column) {
+								minus2="("+textField.get(textField.size()-2).get(column).getText()+"-x)";
+							} else {
+								minus2="("+textField.get(textField.size()-2).get(column).getText()+")";
+							}
+						}
+						result+=" - "+minus2+minus1;
+					} else {
+						System.out.print("matrixSize= "+matrixSize+"\tcolumn= "+(column)+"\trow= "+(textField.size()-matrixSize)+"\n");
+						if (column==textField.size()-matrixSize) {
+							result+="("+textField.get(textField.size()-matrixSize).get(column).getText()+"-x)";
+							minus1="("+textField.get(textField.size()-1).get(column).getText()+")";
+						} else {
+							result+="("+textField.get(textField.size()-matrixSize).get(column).getText()+")";
+							if (textField.size()-1==column) {
+								minus1="("+textField.get(textField.size()-1).get(column).getText()+"-x)";
+							} else {
+								minus1="("+textField.get(textField.size()-1).get(column).getText()+")";
+							}
+						}
+						matrix2by2=true;
+					}
+				}
+			}
+
+		}
+		System.out.println(result);
+		//if one
+	}
+
+
+	/*
+
+
+	public void matrix() {
+		String positive="";
+		int multiply=0;
+		int first=0;
+		int column=0;
+		int row=0;
+		int diagonals=0;
+
+		while (diagonals<textField.size()) {
+
+			while (row<textField.size()) {
+				System.out.println("row= "+row+" column= "+column+" diagonals= "+diagonals);
+				if (column+diagonals==row) {
+					positive+="("+textField.get(element(row)).get(element(column)).getText()+"-x)";
+				} else {
+					if (multiply==0) {
+						multiply=1;
+					} 
+					multiply*=Double.parseDouble(textField.get(element(row)).get(element(column+diagonals)).getText());
+				}
+				column++;
+				row++;
+			}
+			first+=multiply;
+			System.out.println(first);
+			multiply=1;
+			diagonals++;
+			column=0;
+			row=0;
+		}
+		diagonals=0;
+		System.out.println(positive+" + "+first);
+		while (diagonals<textField.size()) {
+			diagonals=10;
+			column++;
+			row--;
+		}
+
+	}*/
+
+	/*public int element(int numElement) {
+		int element=-1;
+		if (numElement>textField.size()-1) {
+			element=Math.abs(textField.size()-1-numElement);
+		} else {
+			element=numElement;
+		}
+		//Integer integer=new Integer(element);
+		System.out.println("element= "+element);
+		return element;
+	}*/
+
+
+	public void actionPerformed(ActionEvent event) {
+		eventName=event.getActionCommand();
+		System.out.println(eventName);
+		if (eventName.equals("Enter")) {
+			getDouble(text.getText());
+			if (eventName.equals("ok")) {
+				link();
+				System.out.println("got to link");
+			}
+		} else if (eventName.equals("Matrix")) {
+			System.out.println("pressed enter on matrix");
+			solveMatrix(textField.size(), new ArrayList<Integer>());
+		}
+	}
+
+	public void keyPressed(KeyEvent event) {
+		int actionInt=event.getKeyCode();
+		String actionString=KeyEvent.getKeyText(actionInt);
+		if (actionString.equals("Enter")) {
+			getDouble(text.getText());
+			if (eventName.equals("ok")) {
+				link();
+				System.out.println("got to link");
+			}
+		}
+
+	}
+
+	public void keyTyped(KeyEvent event) {
+
+	}
+
+	public void keyReleased(KeyEvent event) {
+
+	}
+	
+	public int toMath(String s) {
+		return 0;
+	}
+	/*public class SplitDemo {
+
+	    private static final String REGEX = ":";
+	    private static final String INPUT =
+	        "one:two:three:four:five";
+
+	    public static void main(String[] args) {
+	        Pattern p = Pattern.compile(REGEX);
+	}*/
+
+	private static void runGUI() {
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		Interface drive=new Interface();
+	}
+
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				runGUI();
+			}
+		});
+	}
+
+}
