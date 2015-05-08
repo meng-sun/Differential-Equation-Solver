@@ -1,0 +1,27 @@
+import java.util.regex.*;
+public class MathConverter {
+    private static String input="";
+	public MathConverter() {
+		this.input="[1-x(2-x)(5-x) - (3)(4)][1(1)(5-x) - (3)(1)][1(1)(4) - (2-x)(1)]";
+	}
+	
+	public MathConverter(String input) {
+		this.input=input;
+	}
+
+	public static void main(String[] args) {
+		 Pattern p = Pattern.compile("[brc]at");
+		 for (String thing:Pattern.compile("[").split(" a b [c]")) {
+			 System.out.println(thing);
+		 }
+		 Pattern a=Pattern.compile(input);
+		 Matcher matcher=p.matcher("cat");
+		 while (matcher.find()) {
+			 //matcher.replaceAll(input);
+			 System.out.println(matcher.group());
+			 //System.out.println(input);
+		 }
+
+	}
+
+}
