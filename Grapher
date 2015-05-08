@@ -1,0 +1,30 @@
+
+abstract public class FunctionGrapher extends XYGrapher{
+
+	public FunctionGrapher() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	abstract public double xIncrement();
+	abstract public double yValue(double xValue);
+	public double xValue(int pointNum) {
+		double xValue=pointNum*xIncrement()+xyStart().getX();
+		return xValue;
+	}
+	public Coordinate getPoint(int pointNum) {
+		boolean drawFrom=true;
+		double xValue=xValue(pointNum);
+		double xStart=xyStart().getX();
+		double maxX=xStart+xRange();
+		if (xValue>maxX && xValue-xIncrement() <= xStart+xRange()) {
+			xValue=maxX;
+		} else if (xValue-xIncrement() >= xStart+xRange()) {
+			return null;
+		}
+		double yValue=yValue(xValue);
+		return new Coordinate(xValue, yValue, true, drawFrom);
+
+
+	}
+	
+}
